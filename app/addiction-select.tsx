@@ -8,57 +8,71 @@ import {
   ShoppingBag, 
   Smartphone, 
   Gamepad2,
-  Plus
+  Plus,
+  ChevronRight
 } from 'lucide-react-native';
 
 const addictions = [
-  { id: 'alcohol', name: 'Алкоголь', icon: Wine, color: '#FF5252' },
-  { id: 'smoking', name: 'Курение', icon: Cigarette, color: '#9E9E9E' },
-  { id: 'caffeine', name: 'Кофеин', icon: Coffee, color: '#795548' },
-  { id: 'shopping', name: 'Шоппинг', icon: ShoppingBag, color: '#FF9800' },
-  { id: 'social', name: 'Соцсети', icon: Smartphone, color: '#2196F3' },
-  { id: 'gaming', name: 'Игры', icon: Gamepad2, color: '#4CAF50' },
+  { id: 'alcohol', name: 'Алкоголь', icon: Wine, color: '#FF5252', desc: 'Контроль употребления спиртного' },
+  { id: 'smoking', name: 'Курение', icon: Cigarette, color: '#9E9E9E', desc: 'Отказ от никотина' },
+  { id: 'caffeine', name: 'Кофеин', icon: Coffee, color: '#795548', desc: 'Снижение потребления кофе' },
+  { id: 'shopping', name: 'Шоппинг', icon: ShoppingBag, color: '#FF9800', desc: 'Контроль импульсных покупок' },
+  { id: 'social', name: 'Соцсети', icon: Smartphone, color: '#2196F3', desc: 'Сокращение времени в соцсетях' },
+  { id: 'gaming', name: 'Игры', icon: Gamepad2, color: '#4CAF50', desc: 'Контроль игрового времени' },
 ];
 
 export default function AddictionSelect() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#00E5FF', '#5B10D4']}
+        colors={['#0F172A', '#1E293B']}
         style={styles.background}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <View style={styles.content}>
-          <Text style={styles.title}>Выберите зависимость</Text>
-          <Text style={styles.subtitle}>С чем вы хотите работать?</Text>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Выберите зависимость</Text>
+            <Text style={styles.subtitle}>Отслеживайте прогресс в борьбе с вредными привычками</Text>
+          </View>
           
-          <ScrollView style={styles.grid}>
+          <View style={styles.cardsContainer}>
             {addictions.map((addiction) => {
               const Icon = addiction.icon;
               return (
                 <TouchableOpacity
                   key={addiction.id}
-                  style={[styles.card, { backgroundColor: addiction.color }]}
-                  onPress={() => router.push('/(tabs)')}
+                  style={styles.card}
+                  onPress={() => router.replace('/(tabs)')}
                 >
-                  <Icon size={32} color="#fff" />
-                  <Text style={styles.cardText}>{addiction.name}</Text>
+                  <View style={[styles.iconContainer, { backgroundColor: `${addiction.color}20` }]}>
+                    <Icon size={24} color={addiction.color} />
+                  </View>
+                  
+                  <View style={styles.cardContent}>
+                    <Text style={styles.cardTitle}>{addiction.name}</Text>
+                    <Text style={styles.cardDesc}>{addiction.desc}</Text>
+                  </View>
+                  
+                  <ChevronRight size={20} color="#64748B" />
                 </TouchableOpacity>
               );
             })}
             
             <TouchableOpacity
-              style={[styles.card, styles.addCard]}
-              onPress={() => {
-                // Здесь будет логика добавления новой зависимости
-              }}
+              style={styles.addCard}
+              onPress={() => {/* Добавление новой зависимости */}}
             >
-              <Plus size={32} color="#00E5FF" />
-              <Text style={[styles.cardText, styles.addCardText]}>Добавить</Text>
+              <View style={styles.addIcon}>
+                <Plus size={20} color="#2A5CFF" />
+              </View>
+              <Text style={styles.addCardText}>Добавить свою зависимость</Text>
             </TouchableOpacity>
-          </ScrollView>
-        </View>
+          </View>
+        </ScrollView>
       </LinearGradient>
     </View>
   );
@@ -71,48 +85,82 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
-  content: {
-    flex: 1,
-    padding: 32,
-    paddingTop: 60,
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 16,
   },
   title: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 32,
-    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   subtitle: {
-    fontFamily: 'Inter_400Regular',
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: 32,
+    lineHeight: 24,
+    color: '#94A3B8',
   },
-  grid: {
-    flex: 1,
+  cardsContainer: {
+    padding: 16,
+    gap: 12,
   },
   card: {
-    width: '100%',
-    height: 80,
-    borderRadius: 16,
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    marginBottom: 16,
-    gap: 16,
+    borderWidth: 1,
+    borderColor: '#334155',
   },
-  cardText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 18,
-    color: '#fff',
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  cardContent: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  cardDesc: {
+    fontSize: 14,
+    color: '#64748B',
   },
   addCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: '#00E5FF',
+    backgroundColor: 'rgba(42, 92, 255, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#2A5CFF',
     borderStyle: 'dashed',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(42, 92, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   addCardText: {
-    color: '#00E5FF',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2A5CFF',
+    flex: 1,
   },
 });

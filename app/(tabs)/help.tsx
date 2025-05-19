@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
-import { Phone, BookOpen, Users, CircleAlert as AlertCircle } from 'lucide-react-native';
+import { Phone, BookOpen, Users, AlertCircle } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Help() {
@@ -15,64 +15,77 @@ export default function Help() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#00E5FF', '#5B10D4']}
+        colors={['#0F172A', '#1E293B']}
         style={styles.background}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Помощь</Text>
-          <Text style={styles.subtitle}>Мы всегда рядом</Text>
-        </View>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Помощь и поддержка</Text>
+            <Text style={styles.subtitle}>Ваше выздоровление - наш главный приоритет</Text>
+          </View>
 
-        <ScrollView style={styles.content}>
           <View style={styles.emergencyCard}>
-            <AlertCircle size={32} color="#5B10D4" />
-            <Text style={styles.emergencyTitle}>Что делать при тяге?</Text>
+            <View style={styles.emergencyHeader}>
+              <AlertCircle size={24} color="#2A5CFF" />
+              <Text style={styles.emergencyTitle}>Экстренная помощь</Text>
+            </View>
             <Text style={styles.emergencyText}>
-              1. Сделайте глубокий вдох{'\n'}
+              При сильной тяге:{'\n\n'}
+              1. Сделайте 5 глубоких вдохов{'\n'}
               2. Выпейте стакан воды{'\n'}
               3. Позвоните доверенному человеку{'\n'}
-              4. Смените обстановку
+              4. Выйдите на прогулку{'\n'}
+              5. Вспомните свои причины бросить
             </Text>
             <TouchableOpacity style={styles.emergencyButton}>
-              <Text style={styles.emergencyButtonText}>Подробная инструкция</Text>
+              <Text style={styles.emergencyButtonText}>Полное руководство</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Телефоны доверия</Text>
+            <Text style={styles.sectionTitle}>Телефоны поддержки</Text>
             {emergencyNumbers.map((item) => (
               <TouchableOpacity
                 key={item.id}
                 style={styles.phoneCard}
                 onPress={() => handleCall(item.number)}
               >
-                <View style={styles.phoneInfo}>
-                  <Phone size={24} color="#00E5FF" />
-                  <View>
-                    <Text style={styles.phoneName}>{item.name}</Text>
-                    <Text style={styles.phoneNumber}>{item.number}</Text>
-                  </View>
+                <View style={styles.phoneIcon}>
+                  <Phone size={20} color="#2A5CFF" />
                 </View>
-                <Text style={styles.callButton}>Позвонить</Text>
+                <View style={styles.phoneInfo}>
+                  <Text style={styles.phoneName}>{item.name}</Text>
+                  <Text style={styles.phoneNumber}>{item.number}</Text>
+                </View>
+                <Text style={styles.callButton}>Позвонить →</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Полезные материалы</Text>
+            
             <TouchableOpacity style={styles.guideCard}>
-              <BookOpen size={24} color="#00E5FF" />
+              <View style={[styles.guideIcon, { backgroundColor: 'rgba(255, 82, 82, 0.1)' }]}>
+                <BookOpen size={20} color="#FF5252" />
+              </View>
               <View style={styles.guideContent}>
                 <Text style={styles.guideTitle}>Как объяснить близким</Text>
                 <Text style={styles.guideDescription}>
-                  Пошаговое руководство по разговору с семьей о вашем решении
+                  Руководство по разговору с семьей о вашем решении
                 </Text>
               </View>
             </TouchableOpacity>
+            
             <TouchableOpacity style={styles.guideCard}>
-              <Users size={24} color="#5B10D4" />
+              <View style={[styles.guideIcon, { backgroundColor: 'rgba(33, 150, 243, 0.1)' }]}>
+                <Users size={20} color="#2196F3" />
+              </View>
               <View style={styles.guideContent}>
                 <Text style={styles.guideTitle}>Поиск поддержки</Text>
                 <Text style={styles.guideDescription}>
@@ -94,131 +107,140 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
+    paddingBottom: 40,
   },
   header: {
-    padding: 20,
-    paddingTop: 60,
+    padding: 24,
+    paddingTop: 40,
+    paddingBottom: 16,
   },
   title: {
-    fontFamily: 'Inter_700Bold',
     fontSize: 28,
-    color: '#fff',
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 8,
   },
   subtitle: {
-    fontFamily: 'Inter_400Regular',
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: 4,
+    color: '#94A3B8',
+    lineHeight: 24,
   },
   emergencyCard: {
-    margin: 16,
-    padding: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 24,
+    marginHorizontal: 24,
+    marginBottom: 24,
+    padding: 20,
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  emergencyHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    marginBottom: 16,
+    gap: 12,
   },
   emergencyTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 20,
-    color: '#2C3E50',
-    marginTop: 16,
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   emergencyText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    color: '#2C3E50',
-    lineHeight: 24,
-    marginBottom: 16,
+    fontSize: 14,
+    color: '#94A3B8',
+    lineHeight: 22,
+    marginBottom: 20,
   },
   emergencyButton: {
-    backgroundColor: '#00E5FF',
-    paddingHorizontal: 24,
+    alignSelf: 'flex-start',
     paddingVertical: 12,
-    borderRadius: 24,
+    paddingHorizontal: 24,
+    backgroundColor: '#2A5CFF',
+    borderRadius: 12,
   },
   emergencyButtonText: {
-    fontFamily: 'Inter_600SemiBold',
     fontSize: 14,
-    color: '#fff',
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   section: {
-    margin: 16,
-    marginTop: 0,
+    marginHorizontal: 24,
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontFamily: 'Inter_600SemiBold',
     fontSize: 18,
-    color: '#fff',
-    marginBottom: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 16,
   },
   phoneCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '#1E293B',
     padding: 16,
-    borderRadius: 16,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  phoneIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(42, 92, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   phoneInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    flex: 1,
   },
   phoneName: {
-    fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
-    color: '#2C3E50',
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 4,
   },
   phoneNumber: {
-    fontFamily: 'Inter_400Regular',
     fontSize: 14,
-    color: '#7F8C8D',
+    color: '#64748B',
   },
   callButton: {
-    fontFamily: 'Inter_600SemiBold',
     fontSize: 14,
-    color: '#00E5FF',
+    fontWeight: '600',
+    color: '#2A5CFF',
   },
   guideCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '#1E293B',
     padding: 16,
-    borderRadius: 16,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    gap: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  guideIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   guideContent: {
     flex: 1,
   },
   guideTitle: {
-    fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
-    color: '#2C3E50',
+    fontWeight: '600',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   guideDescription: {
-    fontFamily: 'Inter_400Regular',
     fontSize: 14,
-    color: '#7F8C8D',
+    color: '#64748B',
+    lineHeight: 20,
   },
 });

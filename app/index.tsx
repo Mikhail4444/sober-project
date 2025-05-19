@@ -4,22 +4,23 @@ import { router } from 'expo-router';
 export default function Welcome() {
   return (
     <View style={styles.container}>
-      <Image
-        source={{ uri: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=2940&auto=format&fit=crop' }}
-        style={styles.backgroundImage}
-      />
-      <View style={styles.overlay} />
-      <View style={styles.content}>
-        <Text style={styles.title}>Ты уже молодец, что здесь!</Text>
-        <Text style={styles.subtitle}>Теперь давай сделаем этот день точкой отсчета.</Text>
-        
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={() => router.push('/auth')}
-        >
-          <Text style={styles.buttonText}>Начать путь</Text>
-        </TouchableOpacity>
+      <View style={styles.illustrationContainer}>
+        <Image
+          source={require('../assets/images/hero.jpg')} // или используйте uri, если картинка в интернете
+          style={styles.illustration}
+          resizeMode="contain"
+        />
       </View>
+      <Text style={styles.title}>
+        Ты уже молодец,{"\n"}что здесь!
+      </Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push('/login')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.buttonText}>Начать свой путь</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -27,56 +28,51 @@ export default function Welcome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
-  },
-  backgroundImage: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    opacity: 0.7,
-  },
-  overlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#0F172A',
     alignItems: 'center',
-    padding: 32,
+    justifyContent: 'center',
+    padding: 0,
+  },
+  illustrationContainer: {
+    marginTop: 40,
+    marginBottom: 32,
+    alignItems: 'center',
+    width: '100%',
+  },
+  illustration: {
+    width: 320,
+    height: 220,
   },
   title: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 36,
+    fontSize: 32,
     color: '#fff',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  subtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 20,
-    color: '#fff',
+    fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 48,
-    opacity: 0.9,
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
   button: {
-    backgroundColor: '#2196F3',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 30,
-    shadowColor: '#2196F3',
+    backgroundColor: '#232B3B',
+    paddingHorizontal: 36,
+    paddingVertical: 18,
+    borderRadius: 18,
+    alignItems: 'center',
+    width: '80%',
+    alignSelf: 'center',
+    marginTop: 8,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 5,
   },
   buttonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 18,
     color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 20,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
 });
