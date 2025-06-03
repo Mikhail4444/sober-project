@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, Text, View, Animated } from 'react-native';
-import { SobrietyWheel } from '../components/tracker/SobrietyWheel';
-import { WeekProgress, DayData, DayStatus } from '../components/tracker/WeekProgress';
-import { StatusModal } from '../components/tracker/modals/StatusModal';
-import { StatsSection } from '../components/tracker/StatsSection';
-import { CalendarModal } from '../components/tracker/calendar/CalendarModal';
-import { useCalendar } from '../components/tracker/calendar/useCalendar';
-import { Achievements } from '../components/tracker/Achievements';
+import { SobrietyWheel } from '@components/tracker/SobrietyWheel';
+import { WeekProgress, DayData, DayStatus } from '@components/tracker/WeekProgress';
+import { StatusModal } from '@components/tracker/modals/StatusModal';
+import { StatsSection } from '@components/tracker/StatsSection';
+import { CalendarModal } from '@components/tracker/calendar/CalendarModal';
+import { useCalendar } from '@components/tracker/calendar/useCalendar';
+import { Achievements } from '@components/tracker/Achievements';
 
 export default function SobrietyTracker() {
   const [days, setDays] = useState(0);

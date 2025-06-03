@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
-import { Phone, BookOpen, Users, AlertCircle } from 'lucide-react-native';
+import { Phone, BookOpen, Users, AlertCircle, MessageCircle, Heart} from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 
 export default function Help() {
   const emergencyNumbers = [
@@ -11,6 +12,15 @@ export default function Help() {
   const handleCall = (number: string) => {
     Linking.openURL(`tel:${number}`);
   };
+
+  // Функции для навигации
+  const goToSupportGroups = () => {
+    router.push('/SupportGroups');
+  };
+
+  // const goToProfessionalHelp = () => {
+  //   navigation.navigate('ProfessionalHelp'); // Предполагается, что у вас есть этот экран
+  // };
 
   return (
     <View style={styles.container}>
@@ -67,29 +77,71 @@ export default function Help() {
             ))}
           </View>
 
+          {/* Переработанные полезные материалы */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Полезные материалы</Text>
+            <Text style={styles.sectionTitle}>Ресурсы</Text>
             
+            {/* Обновлённая карточка "Поддержка близких" */}
             <TouchableOpacity style={styles.guideCard}>
               <View style={[styles.guideIcon, { backgroundColor: 'rgba(255, 82, 82, 0.1)' }]}>
                 <BookOpen size={20} color="#FF5252" />
               </View>
               <View style={styles.guideContent}>
-                <Text style={styles.guideTitle}>Как объяснить близким</Text>
+                <Text style={styles.guideTitle}>Поддержка близких</Text>
                 <Text style={styles.guideDescription}>
-                  Руководство по разговору с семьей о вашем решении
+                  5 шагов для разговора + шаблоны фраз
                 </Text>
+                <View style={styles.inlineButtons}>
+                  <TouchableOpacity style={styles.smallButton}>
+                    <Text style={styles.smallButtonText}>Примеры диалогов</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.smallButton}>
+                    <Text style={styles.smallButtonText}>Чат-тренажёр</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.guideCard}>
+
+            {/* Новая карточка для экстренного чата */}
+            {/* <TouchableOpacity style={[styles.guideCard, { backgroundColor: '#1E3A8A' }]}>
+              <View style={[styles.guideIcon, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
+                <MessageCircle size={20} color="#FFFFFF" />
+              </View>
+              <View style={styles.guideContent}>
+                <Text style={[styles.guideTitle, { color: '#FFFFFF' }]}>Экстренный чат</Text>
+                <Text style={[styles.guideDescription, { color: '#BFDBFE' }]}>
+                  Немедленная помощь при кризисном состоянии
+                </Text>
+              </View>
+            </TouchableOpacity> */}
+
+            {/* Раздел поддержки разбит на две карточки */}
+            <TouchableOpacity 
+              style={styles.guideCard}
+              onPress={goToSupportGroups}
+            >
               <View style={[styles.guideIcon, { backgroundColor: 'rgba(33, 150, 243, 0.1)' }]}>
                 <Users size={20} color="#2196F3" />
               </View>
               <View style={styles.guideContent}>
-                <Text style={styles.guideTitle}>Поиск поддержки</Text>
+                <Text style={styles.guideTitle}>Анонимные группы поддержки</Text>
                 <Text style={styles.guideDescription}>
-                  Где найти группы поддержки и профессиональную помощь
+                  Найдите встречи АА и других сообществ в вашем городе
+                </Text>
+              </View>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.guideCard}
+              // onPress={goToProfessionalHelp}
+            >
+              <View style={[styles.guideIcon, { backgroundColor: 'rgba(76, 175, 80, 0.1)' }]}>
+                <Heart size={20} color="#4CAF50" />
+              </View>
+              <View style={styles.guideContent}>
+                <Text style={styles.guideTitle}>Профессиональная помощь</Text>
+                <Text style={styles.guideDescription}>
+                  Подберите психолога, нарколога или реабилитационный центр
                 </Text>
               </View>
             </TouchableOpacity>
@@ -242,5 +294,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748B',
     lineHeight: 20,
+  },
+  quickActionsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  quickActionButton: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  quickActionGradient: {
+    padding: 20,
+    alignItems: 'center',
+    gap: 8,
+  },
+  quickActionText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  inlineButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
+  smallButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+  },
+  smallButtonText: {
+    color: '#FF5252',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

@@ -2,9 +2,17 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { CalendarDay } from './CalendarDay';
-import { MarkedDates } from './types';
 import { DayStatus } from '../WeekProgress';
 import { isToday, isBefore, parseISO } from 'date-fns';
+
+export type MarkedDates = {
+  [date: string]: {
+    selected?: boolean;
+    marked?: boolean;
+    status?: DayStatus;
+    dotColor?: string;
+  };
+};
 
 interface CalendarModalProps {
   visible: boolean;
