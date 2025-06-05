@@ -7,14 +7,14 @@ export default function NotFound() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#00E5FF', '#5B10D4']}
+        colors={['#0F172A', '#1E293B']}
         style={styles.background}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <AlertTriangle size={64} color="#fff" />
+            <AlertTriangle size={64} color="#2A5CFF" />
           </View>
           
           <Text style={styles.title}>Упс! Страница не найдена</Text>
@@ -24,9 +24,9 @@ export default function NotFound() {
 
           <TouchableOpacity 
             style={styles.button}
-            onPress={() => router.push('/')}
+            onPress={() => router.replace('/')}
           >
-            <Home size={20} color="#fff" />
+            <Home size={20} color="#FFFFFF" />
             <Text style={styles.buttonText}>Вернуться на главную</Text>
           </TouchableOpacity>
         </View>
@@ -46,48 +46,49 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: 24,
   },
   iconContainer: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(42, 92, 255, 0.1)',
+    borderWidth: 2,
+    borderColor: '#2A5CFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
   },
   title: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 32,
-    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 16,
+    lineHeight: 36,
   },
   subtitle: {
-    fontFamily: 'Inter_400Regular',
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#94A3B8',
     textAlign: 'center',
     marginBottom: 32,
+    lineHeight: 24,
+    paddingHorizontal: 20,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#4CAF50',
+    gap: 12,
+    backgroundColor: '#2A5CFF',
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderRadius: 30,
-    shadowColor: '#4CAF50',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#3B82F6',
   },
   buttonText: {
-    fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
-    color: '#fff',
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
-}); 
+});

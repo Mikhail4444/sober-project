@@ -1,748 +1,247 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Dimensions, Image } from 'react-native';
-import { Calendar as CalendarIcon, DollarSign, User, Trophy, X, Settings, Globe } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-// import { useAuth } from '../context/AuthContext';
-// import { useApp } from '../context/AppContext';
-import { router } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, StyleSheet, TouchableOpacity, Text, View, Animated } from 'react-native';
+import { SobrietyWheel } from '@components/tracker/SobrietyWheel';
+import { WeekProgress, DayData, DayStatus } from '@components/tracker/WeekProgress';
+import { StatusModal } from '@components/tracker/modals/StatusModal';
+import { StatsSection } from '@components/tracker/StatsSection';
+import { CalendarModal } from '@components/tracker/calendar/CalendarModal';
+import { useCalendar } from '@components/tracker/calendar/useCalendar';
+import { Achievements } from '@components/tracker/Achievements';
 
-const { width } = Dimensions.get('window');
-const DAYS_IN_WEEK = 7;
-const CALENDAR_DAYS = 42; // 6 недель
+export default function SobrietyTracker() {
+  const [days, setDays] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [progress] = useState(new Animated.Value(0));
+  const [isCelebrating, setIsCelebrating] = useState(false);
+  const [headerColor] = useState(new Animated.Value(0));
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  
+  const [weekData, setWeekData] = useState<DayData[]>([
+    { day: 'Пн', status: 'clean', anim: new Animated.Value(0) },
+    { day: 'Вт', status: 'failed', anim: new Animated.Value(0) },
+    { day: 'Ср', status: 'clean', anim: new Animated.Value(0) },
+    { day: 'Чт', status: 'controlled', anim: new Animated.Value(0) },
+    { day: 'Пт', status: 'failed', anim: new Animated.Value(0) },
+    { day: 'Сб', status: 'clean', anim: new Animated.Value(0) },
+    { day: 'Вс', status: 'clean', anim: new Animated.Value(0) },
+  ]);
 
-interface MarkedDate {
-  color: string;
-}
+  const currentDayIndex = new Date().getDay();
+  const adjustedDayIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
 
-interface MarkedDates {
-  [key: string]: MarkedDate;
-}
+  useEffect(() => {
+    Animated.timing(progress, {
+      toValue: (days / 30) * 100,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start();
 
-const themes = [
-  { id: 'default', name: 'По умолчанию' },
-  { id: 'dark', name: 'Темная' },
-  { id: 'light', name: 'Светлая' },
-  { id: 'custom', name: 'Пользовательская' },
-];
+    if (days >= 30 && !isCelebrating) {
+      setIsCelebrating(true);
+      Animated.timing(headerColor, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: false,
+      }).start();
+      
+      setTimeout(() => {
+        setIsCelebrating(false);
+        Animated.timing(headerColor, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: false,
+        }).start();
+      }, 3000);
+    }
+  }, [days]);
 
-const languages = [
-  { id: 'ru', name: 'Русский' },
-  { id: 'tt', name: 'Татарский' },
-  { id: 'en', name: 'English' },
-];
+  const successRate = Math.round(
+    (weekData.filter(day => day.status !== 'failed').length / 7 * 100)
+  );
 
-export default function Dashboard() {
-  // const { user, isGuest, logout } = useAuth();
-  // const { theme, setTheme, language, setLanguage, notifications } = useApp();
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [showRelapseModal, setShowRelapseModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [markedDates, setMarkedDates] = useState<MarkedDates>({
-    '2024-03-01': { color: '#4CAF50' }, // Зеленый - день чист
-    '2024-03-05': { color: '#FFC107' }, // Желтый - контролируемый срыв
-    '2024-03-10': { color: '#F44336' }, // Красный - срыв
-  });
+  const cleanDaysCount = weekData.filter(day => day.status === 'clean').length;
+  const controlledDaysCount = weekData.filter(day => day.status === 'controlled').length;
 
-  const daysWithoutRelapse = 15;
-  const moneySaved = 750;
+  const addCleanDay = () => {
+    const updatedData = [...weekData];
+    updatedData[adjustedDayIndex] = {
+      ...updatedData[adjustedDayIndex],
+      status: 'clean',
+      anim: new Animated.Value(0)
+    };
 
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const firstDayOfWeek = firstDay.getDay();
-    
-    return { daysInMonth, firstDayOfWeek };
+    animateDay(updatedData[adjustedDayIndex]);
+    setWeekData(updatedData);
+    setDays(days + 1);
+    setStreak(streak + 1);
   };
 
-  const renderCalendar = () => {
-    const { daysInMonth, firstDayOfWeek } = getDaysInMonth(selectedDate);
-    const days = [];
-    const currentDate = new Date();
-    
-    // Добавляем пустые дни в начале месяца
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push(<View key={`empty-${i}`} style={styles.calendarDay} />);
-    }
-    
-    // Добавляем дни месяца
-    for (let i = 1; i <= daysInMonth; i++) {
-      const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), i);
-      const dateString = date.toISOString().split('T')[0];
-      const isToday = date.toDateString() === currentDate.toDateString();
-      const markedDate = markedDates[dateString];
-      
-      days.push(
-        <TouchableOpacity
-          key={i}
-          style={[
-            styles.calendarDay,
-            isToday && styles.today,
-            markedDate && { backgroundColor: markedDate.color }
-          ]}
-          onPress={() => {
-            if (markedDate) {
-              delete markedDates[dateString];
-            } else {
-              setMarkedDates({
-                ...markedDates,
-                [dateString]: { color: '#4CAF50' }
-              });
-            }
-          }}
-        >
-          <Text style={[
-            styles.calendarDayText,
-            isToday && styles.todayText,
-            markedDate && styles.markedDayText
-          ]}>
-            {i}
-          </Text>
-        </TouchableOpacity>
-      );
-    }
-    
-    return days;
+  const handleStatusSelect = (status: DayStatus) => {
+    const updatedData = [...weekData];
+    updatedData[adjustedDayIndex] = {
+      ...updatedData[adjustedDayIndex],
+      status,
+      anim: new Animated.Value(0)
+    };
+
+    animateDay(updatedData[adjustedDayIndex]);
+    setWeekData(updatedData);
+    setShowStatusModal(false);
+    setStreak(status === 'controlled' ? streak + 0 : 0);
+  };
+
+  const animateDay = (day: DayData) => {
+    Animated.spring(day.anim, {
+      toValue: 1,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const { 
+    markedDates, 
+    selectedDate, 
+    markDate,
+    setSelectedDate 
+  } = useCalendar();
+  
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+
+  const handleCalendarDayPress = (date: string, status: DayStatus) => {
+    markDate(date, status);
+    setShowCalendar(false);
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#00E5FF', '#5B10D4']}
-        style={styles.background}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-            <View>
-              <Text style={styles.headerDate}>08:00</Text>
-              <Text style={styles.headerTitle}>Доброе утро</Text>
-      </View>
-      {/* <TouchableOpacity 
-              style={styles.profileButton}
-              onPress={() => setShowProfile(true)}
-            >
-              <View style={styles.avatarContainer}>
-                {user?.avatar ? (
-                  <Image 
-                    source={{ uri: user.avatar }} 
-                    style={styles.avatar}
-                  />
-                ) : (
-                  <User size={24} color="#fff" />
-                )}
-              </View>
-              {notifications > 0 && (
-                <View style={styles.notificationBadge}>
-                  <Text style={styles.notificationText}>
-                    {notifications > 99 ? '99+' : notifications}
-                  </Text>
-                </View>
-              )}
-      </TouchableOpacity> */}
-          </View>
-        </View>
+    <ScrollView 
+      contentContainerStyle={styles.scrollContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      <SobrietyWheel
+        streak={streak}
+        progress={progress}
+        headerColor={headerColor}
+        isCelebrating={isCelebrating}
+      />
 
-        <ScrollView style={styles.content}>
-          <View style={styles.mainCard}>
-            <View style={styles.mainCardHeader}>
-              <View style={styles.mainCardTitle}>
-                <CalendarIcon size={24} color="#00E5FF" />
-                <Text style={styles.mainCardTitleText}>Дней без срыва</Text>
-        </View>
-              <Text style={styles.daysCount}>{daysWithoutRelapse}</Text>
-      </View>
+      <WeekProgress
+        weekData={weekData}
+        adjustedDayIndex={adjustedDayIndex}
+        successRate={successRate}
+      />
 
-            <View style={styles.buttonsRow}>
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.cleanDayButton]}
-                onPress={() => {
-                  const today = new Date().toISOString().split('T')[0];
-                  setMarkedDates({
-                    ...markedDates,
-                    [today]: { color: '#4CAF50' }
-                  });
-                }}
-              >
-                <Text style={styles.actionButtonText}>День чист</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.relapseButton]}
-                onPress={() => setShowRelapseModal(true)}
-              >
-                <Text style={styles.actionButtonText}>Срыв</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.buttonsRow}>
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.secondaryButton]}
-                onPress={() => setShowCalendar(true)}
-              >
-                <DollarSign size={20} color="#fff" />
-                <Text style={styles.actionButtonText}>Сэкономлено</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.secondaryButton]}
-                onPress={() => setShowCalendar(true)}
-              >
-                <Trophy size={20} color="#fff" />
-                <Text style={styles.actionButtonText}>Челленджи</Text>
+      <View style={styles.buttons}>
+        <TouchableOpacity style={styles.cleanButton} onPress={addCleanDay}>
+          <Text style={styles.buttonText}>✓ Чистый день</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.failButton} 
+          onPress={() => setShowStatusModal(true)}
+        >
+          <Text style={styles.buttonText}>Зафиксировать срыв</Text>
         </TouchableOpacity>
       </View>
-          </View>
-        </ScrollView>
-      </LinearGradient>
 
-      <Modal
+      <StatsSection
+        cleanDaysCount={cleanDaysCount}
+        controlledDaysCount={controlledDaysCount}
+        days={days}
+      />
+
+      <StatusModal
+        visible={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+        onSelect={handleStatusSelect}
+      />
+
+      <View style={styles.bottomButtons}>
+        <TouchableOpacity 
+          style={styles.calendarButton}
+          onPress={() => setShowCalendar(true)}
+        >
+          <Text style={styles.buttonText}>📆 Открыть календарь</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.achievementsButton}
+          onPress={() => setShowAchievements(true)}
+        >
+          <Text style={styles.buttonText}>🏆 Достижения</Text>
+        </TouchableOpacity>
+      </View>
+
+      <CalendarModal
         visible={showCalendar}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowCalendar(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Календарь</Text>
-            <View style={styles.calendarHeader}>
-              <Text style={styles.calendarMonth}>
-                {selectedDate.toLocaleString('ru', { month: 'long', year: 'numeric' })}
-              </Text>
-            </View>
-            <View style={styles.calendarGrid}>
-              {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
-                <Text key={day} style={styles.calendarWeekDay}>{day}</Text>
-              ))}
-              {renderCalendar()}
-            </View>
-            <View style={styles.legend}>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#4CAF50' }]} />
-                <Text style={styles.legendText}>День чист</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#FFC107' }]} />
-                <Text style={styles.legendText}>Контролируемый срыв</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#F44336' }]} />
-                <Text style={styles.legendText}>Срыв</Text>
-              </View>
-            </View>
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={() => setShowCalendar(false)}
-            >
-              <Text style={styles.closeButtonText}>Закрыть</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowCalendar(false)}
+        markedDates={markedDates}
+        onDayPress={handleCalendarDayPress}
+      />
 
-      <Modal
-        visible={showRelapseModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowRelapseModal(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Тип срыва</Text>
-            <TouchableOpacity 
-              style={[styles.relapseOption, { backgroundColor: 'rgba(255, 193, 7, 0.1)' }]}
-              onPress={() => {
-                const today = new Date().toISOString().split('T')[0];
-                setMarkedDates({
-                  ...markedDates,
-                  [today]: { color: '#FFC107' }
-                });
-                setShowRelapseModal(false);
-              }}
-            >
-              <View style={[styles.relapseDot, { backgroundColor: '#FFC107' }]} />
-              <View>
-                <Text style={styles.relapseOptionTitle}>Контролируемое употребление</Text>
-                <Text style={styles.relapseOptionSubtitle}>(например, 1 бокал вина)</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.relapseOption, { backgroundColor: 'rgba(244, 67, 54, 0.1)' }]}
-              onPress={() => {
-                const today = new Date().toISOString().split('T')[0];
-                setMarkedDates({
-                  ...markedDates,
-                  [today]: { color: '#F44336' }
-                });
-                setShowRelapseModal(false);
-              }}
-            >
-              <View style={[styles.relapseDot, { backgroundColor: '#F44336' }]} />
-              <View>
-                <Text style={styles.relapseOptionTitle}>Не контролировал ситуацию</Text>
-                <Text style={styles.relapseOptionSubtitle}>(много выпил)</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={() => setShowRelapseModal(false)}
-            >
-              <Text style={styles.closeButtonText}>Отмена</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* <Modal
-        visible={showProfile}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowProfile(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: 'transparent' }]}>
-            <TouchableOpacity 
-              style={styles.closeModalButton}
-              onPress={() => setShowProfile(false)}
-            >
-              <X size={24} color="#fff" />
-            </TouchableOpacity>
-
-            <View style={styles.profileContent}>
-              <View style={styles.profileHeader}>
-                <TouchableOpacity style={styles.largeAvatarContainer}>
-                  {user?.avatar ? (
-                    <Image 
-                      source={{ uri: user.avatar }} 
-                      style={styles.largeAvatar}
-                    />
-                  ) : (
-                    <User size={48} color="#fff" />
-                  )}
-                </TouchableOpacity>
-                <Text style={styles.profileName}>
-                  {user?.name || 'Гость'}
-                </Text>
-                <Text style={styles.profileStatus}>
-                  {isGuest ? 'Гостевой режим' : '15 дней без срыва'}
-                </Text>
-              </View>
-
-              <View style={styles.settingsSection}>
-                <Text style={styles.settingsTitle}>Тема</Text>
-                <View style={styles.optionsGrid}>
-                  {themes.map((t) => (
-                    <TouchableOpacity
-                      key={t.id}
-                      style={[
-                        styles.optionButton,
-                        theme === t.id && styles.optionButtonActive
-                      ]}
-                      onPress={() => setTheme(t.id as any)}
-                    >
-                      <Text style={[
-                        styles.optionButtonText,
-                        theme === t.id && styles.optionButtonTextActive
-                      ]}>
-                        {t.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              <View style={styles.settingsSection}>
-                <Text style={styles.settingsTitle}>Язык</Text>
-                <View style={styles.optionsGrid}>
-                  {languages.map((lang) => (
-                    <TouchableOpacity
-                      key={lang.id}
-                      style={[
-                        styles.optionButton,
-                        language === lang.id && styles.optionButtonActive
-                      ]}
-                      onPress={() => setLanguage(lang.id as any)}
-                    >
-                      <Text style={[
-                        styles.optionButtonText,
-                        language === lang.id && styles.optionButtonTextActive
-                      ]}>
-                        {lang.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              {!isGuest && (
-                <TouchableOpacity 
-                  style={styles.logoutButton}
-                  onPress={() => { 
-                    setShowProfile(false);
-                    router.push('/profile')
-                  }}
-                >
-                  <Text style={styles.logoutButtonText}>
-                    Полный профиль
-                  </Text>
-                </TouchableOpacity>
-              )}
-
-              {!isGuest && (
-                <TouchableOpacity 
-                  style={styles.logoutButton}
-                  onPress={() => {
-                    logout();
-                    setShowProfile(false);
-                    router.push('/login');
-                  }}
-                >
-                  <Text style={styles.logoutButtonText}>
-                    Выйти
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal> */}
-    </View>
+      <Achievements
+        visible={showAchievements}
+        onClose={() => setShowAchievements(false)}
+        streak={streak}
+        weekData={weekData}
+        markedDates={markedDates}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  background: {
-    flex: 1,
-  },
-  header: {
+  scrollContainer: {
+    flexGrow: 1,
     padding: 20,
-    paddingTop: 60,
+    backgroundColor: '#0F172A',
+    alignItems: 'center',
   },
-  headerTop: {
+  buttons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  headerDate: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: 4,
-  },
-  headerTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: '#fff',
-  },
-  profileButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
+    gap: 20,
+    marginVertical: 20,
     justifyContent: 'center',
-    position: 'relative',
-  },
-  avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: '#FF3B30',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  notificationText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#fff',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  closeModalButton: {
-    position: 'absolute',
-    right: 20,
-    top: 40,
-    zIndex: 1,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileContent: {
-    flex: 1,
-    paddingTop: 100,
-    paddingHorizontal: 20,
-  },
-  profileHeader: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  largeAvatarContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  largeAvatar: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 60,
-  },
-  profileName: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: '#fff',
-    marginBottom: 8,
-  },
-  profileStatus: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  settingsSection: {
-    marginBottom: 32,
-  },
-  settingsTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 18,
-    color: '#fff',
-    marginBottom: 16,
-  },
-  optionsGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
   },
-  optionButton: {
-    paddingHorizontal: 20,
+  cleanButton: {
+    backgroundColor: '#2ECC71',
     paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  optionButtonActive: {
-    backgroundColor: '#4CAF50',
-  },
-  optionButtonText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 16,
-    color: '#fff',
-  },
-  optionButtonTextActive: {
-    fontFamily: 'Inter_600SemiBold',
-  },
-  logoutButton: {
-    backgroundColor: '#F44336',
-    paddingVertical: 16,
-    borderRadius: 24,
-    alignItems: 'center',
-    marginTop: 'auto',
-    marginBottom: 40,
-  },
-  logoutButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 18,
-    color: '#fff',
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  mainCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 24,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  mainCardHeader: {
-    marginBottom: 20,
-  },
-  mainCardTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  mainCardTitleText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#2C3E50',
-  },
-  daysCount: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 48,
-    color: '#00E5FF',
-  },
-  buttonsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 16,
-    borderRadius: 16,
-  },
-  cleanDayButton: {
-    backgroundColor: '#4CAF50',
-  },
-  relapseButton: {
-    backgroundColor: '#F44336',
-  },
-  secondaryButton: {
-    backgroundColor: '#00E5FF',
-  },
-  actionButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#fff',
-  },
-  modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 24,
-    minHeight: '70%',
-  },
-  modalTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: '#2C3E50',
-    marginBottom: 16,
-  },
-  calendarHeader: {
-    marginBottom: 16,
-  },
-  calendarMonth: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 20,
-    color: '#2C3E50',
-  },
-  calendarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  calendarWeekDay: {
-    width: (width - 80) / 7,
-    textAlign: 'center',
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#7F8C8D',
-  },
-  calendarDay: {
-    width: (width - 80) / 7,
-    height: (width - 80) / 7,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  calendarDayText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    color: '#2C3E50',
-  },
-  today: {
-    backgroundColor: 'rgba(0, 229, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: '#00E5FF',
-  },
-  todayText: {
-    color: '#00E5FF',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  markedDayText: {
-    color: '#fff',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  legend: {
-    marginTop: 24,
-    gap: 12,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  legendDot: {
-    width: 16,
-    height: 16,
+    paddingHorizontal: 24,
     borderRadius: 8,
+    minWidth: 120,
   },
-  legendText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#2C3E50',
+  failButton: {
+    backgroundColor: 'rgba(231, 76, 60, 0.2)',
+    borderColor: '#E74C3C',
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    minWidth: 120,
   },
-  relapseOption: {
+  buttonText: {
+    color: 'white',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  bottomButtons: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
+    justifyContent: 'center',
     gap: 12,
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
-  relapseDot: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-  },
-  relapseOptionTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#2C3E50',
-  },
-  relapseOptionSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#7F8C8D',
-  },
-  closeButton: {
-    backgroundColor: '#00E5FF',
-    padding: 16,
-    borderRadius: 16,
+  calendarButton: {
+    flex: 1,
+    backgroundColor: 'rgba(42, 92, 255, 0.2)',
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    marginTop: 16,
   },
-  closeButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#FFFFFF',
+  achievementsButton: {
+    flex: 1,
+    backgroundColor: 'rgba(46, 204, 113, 0.2)',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
   },
 });
