@@ -5,7 +5,7 @@ import { CalendarDay } from './CalendarDay';
 import { DayStatus } from '../WeekProgress';
 import { isToday, isBefore, parseISO } from 'date-fns';
 
-export type MarkedDates = {
+type MarkedDates = {
   [date: string]: {
     selected?: boolean;
     marked?: boolean;

@@ -2,43 +2,71 @@ import { ScrollView, TouchableOpacity, Text, StyleSheet, View } from 'react-nati
 import { 
   HeartPulse, MessageSquareText, Users, 
   CalendarCheck, Coins, BookText,
-  ChevronRight
+  ChevronRight, LucideIcon
 } from 'lucide-react-native';
+import { router } from 'expo-router';
 
-const AI_ROLES = [
+// Определяем тип для роли помощника
+type AIRole = {
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  description: string;
+  color: string;
+  route: string;
+};
+
+const AI_ROLES: AIRole[] = [
   {
     id: 'consultant',
     name: 'Консультант по зависимостям',
     icon: HeartPulse,
-    description: 'Профессиональные методики и стратегии'
+    description: 'Профессиональные методики и стратегии',
+    color: '#FF6B6B',
+    route: 'ConsultantChat'
   },
   {
     id: 'psychologist',
     name: 'Клинический психолог',
     icon: MessageSquareText,
-    description: 'Помощь в работе с триггерами'
+    description: 'Помощь в работе с триггерами',
+    color: '#4ECDC4',
+    route: 'PsychologistChat'
   },
   {
     id: 'mentor',
     name: 'Наставник по выздоровлению',
     icon: Users,
-    description: 'Личный опыт и советы'
+    description: 'Личный опыт и советы',
+    color: '#FFD166',
+    route: 'MentorChat'
   },
   {
     id: 'planner',
     name: 'Антикризисный планировщик',
     icon: CalendarCheck,
-    description: 'Персональные планы на сложные ситуации'
+    description: 'Персональные планы на сложные ситуации',
+    color: '#A78BFA',
+    route: 'PlannerChat'
   },
   {
     id: 'finance',
     name: 'Финансовый трекер',
     icon: Coins,
-    description: 'Анализ сэкономленных средств'
+    description: 'Анализ сэкономленных средств',
+    color: '#06D6A0',
+    route: 'FinanceChat'
   }
 ];
 
-export default function RoleSelectorVertical({ onSelectRole }) {
+export default function RoleSelectorVertical() {
+  const handleRoleSelect = (role: AIRole) => {
+    router.push({
+      pathname: role.route,
+      params: { roleName: role.name }
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.headerTitle}>Выберите роль помощника</Text>
@@ -51,11 +79,11 @@ export default function RoleSelectorVertical({ onSelectRole }) {
             <TouchableOpacity
               key={role.id}
               style={styles.roleCard}
-              onPress={() => onSelectRole(role)}
+              onPress={() => handleRoleSelect(role)}
             >
               <View style={styles.roleContent}>
-                <View style={styles.iconContainer}>
-                  <Icon size={22} color="#2A5CFF" />
+                <View style={[styles.iconContainer, { backgroundColor: `${role.color}20` }]}>
+                  <Icon size={22} color={role.color} />
                 </View>
                 <View style={styles.textContainer}>
                   <Text style={styles.roleName}>{role.name}</Text>
@@ -71,6 +99,7 @@ export default function RoleSelectorVertical({ onSelectRole }) {
   );
 }
 
+// Стили остаются без изменений
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -112,7 +141,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(42, 92, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16

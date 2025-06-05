@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { DayStatus } from '../WeekProgress';
 import { isBefore, parseISO } from 'date-fns';
 
-export type MarkedDates = {
+type MarkedDates = {
   [date: string]: {
     selected?: boolean;
     marked?: boolean;

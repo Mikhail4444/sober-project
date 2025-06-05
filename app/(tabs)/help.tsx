@@ -18,9 +18,9 @@ export default function Help() {
     router.push('/SupportGroups');
   };
 
-  // const goToProfessionalHelp = () => {
-  //   navigation.navigate('ProfessionalHelp'); // Предполагается, что у вас есть этот экран
-  // };
+  const goToProfessionalHelp = () => {
+    router.push('/ProfessionalHelp');
+  };
 
   return (
     <View style={styles.container}>
@@ -82,7 +82,7 @@ export default function Help() {
             <Text style={styles.sectionTitle}>Ресурсы</Text>
             
             {/* Обновлённая карточка "Поддержка близких" */}
-            <TouchableOpacity style={styles.guideCard}>
+            {/* <TouchableOpacity style={styles.guideCard}>
               <View style={[styles.guideIcon, { backgroundColor: 'rgba(255, 82, 82, 0.1)' }]}>
                 <BookOpen size={20} color="#FF5252" />
               </View>
@@ -100,7 +100,7 @@ export default function Help() {
                   </TouchableOpacity>
                 </View>
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* Новая карточка для экстренного чата */}
             {/* <TouchableOpacity style={[styles.guideCard, { backgroundColor: '#1E3A8A' }]}>
@@ -133,7 +133,7 @@ export default function Help() {
             
             <TouchableOpacity 
               style={styles.guideCard}
-              // onPress={goToProfessionalHelp}
+              onPress={goToProfessionalHelp}
             >
               <View style={[styles.guideIcon, { backgroundColor: 'rgba(76, 175, 80, 0.1)' }]}>
                 <Heart size={20} color="#4CAF50" />
