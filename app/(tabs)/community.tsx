@@ -1,255 +1,257 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal } from 'react-native';
-import { MessageCircle, ThumbsUp, Filter, Plus } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, TextInput, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-// import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { ChevronDown, MessageCircle, Heart, Share, Plus, Filter } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 
-export default function Community() {
-  // const { isGuest } = useAuth();
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-
-  const stories = [
-    {
-      id: 1,
-      title: '100 дней свободы: Моя история',
-      author: 'Аноним',
-      days: 100,
-      likes: 24,
-      comments: 8,
-      preview: 'Никогда не думал, что смогу дойти до этой отметки...',
+// Mock данные постов
+const posts = [
+  {
+    id: '1',
+    user: {
+      name: 'Аноним',
+      avatar: require('../../assets/images/woman.jpg'),
+      daysSober: 45,
     },
-    {
-      id: 2,
-      title: 'Первая неделя позади',
-      author: 'Новичок',
-      days: 7,
-      likes: 45,
-      comments: 12,
-      preview: 'Самые сложные дни остались позади...',
+    content: 'Сегодня 30 дней без сигарет! Чувствую себя намного лучше, появилась энергия.',
+    likes: 12,
+    comments: 4,
+    time: '2 часа назад',
+    tags: ['успех', 'никотин'],
+  },
+  {
+    id: '2',
+    user: {
+      name: 'Аноним',
+      avatar: require('../../assets/images/man.jpg'),
+      daysSober: 120,
     },
-  ];
+    content: 'Как вы справляетесь с тягой в стрессовых ситуациях? Ищу советы...',
+    likes: 8,
+    comments: 7,
+    time: '5 часов назад',
+    tags: ['вопрос', 'поддержка'],
+  },
+];
 
-  // const handleComment = () => {
-  //   if (isGuest) {
-  //     setShowRegisterModal(true);
-  //   } else {
-  //     // Логика добавления комментария
-  //   }
-  // };
+export default function CommunityScreen() {
+  const router = useRouter();
+  const [activeFilter, setActiveFilter] = useState('new');
+  const [newPostText, setNewPostText] = useState('');
 
   return (
-    <ScrollView 
-      style={styles.container}
-      contentContainerStyle={styles.scrollContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.header}>
-        <Text style={styles.title}>Сообщество</Text>
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter size={20} color="#fff" />
-          <Text style={styles.filterText}>Фильтры</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.categories}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <TouchableOpacity style={[styles.categoryButton, styles.categoryActive]}>
-            <Text style={[styles.categoryText, styles.categoryTextActive]}>Все истории</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <Text style={styles.categoryText}>Новички</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <Text style={styles.categoryText}>100+ дней</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <Text style={styles.categoryText}>Мой регион</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-
-      <View style={styles.quizCard}>
-        <Text style={styles.quizTitle}>Дневной квиз</Text>
-        <Text style={styles.quizQuestion}>Продолжи фразу: Когда тянет, я...</Text>
-        <TouchableOpacity style={styles.quizButton}>
-          <Text style={styles.quizButtonText}>Ответить</Text>
-        </TouchableOpacity>
-      </View>
-
-      {stories.map((story) => (
-        <View key={story.id} style={styles.storyCard}>
-          <View style={styles.storyHeader}>
-            <View>
-              <Text style={styles.storyTitle}>{story.title}</Text>
-              <Text style={styles.storyAuthor}>{story.author} • {story.days} дней</Text>
-            </View>
-          </View>
-          <Text style={styles.storyPreview}>{story.preview}</Text>
-          <View style={styles.storyActions}>
-            <TouchableOpacity style={styles.actionButton}>
-              <ThumbsUp size={18} color="#666" />
-              <Text style={styles.actionText}>{story.likes}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              // onPress={handleComment}
-            >
-              <MessageCircle size={18} color="#666" />
-              <Text style={styles.actionText}>{story.comments}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ))}
-
-      <Modal
-        visible={showRegisterModal}
-        transparent
-        animationType="fade"
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#0F172A', '#1E293B']}
+        style={styles.background}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Регистрация</Text>
-            <Text style={styles.modalText}>
-              Зарегистрируйтесь, чтобы участвовать в обсуждениях
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.modalButtonPrimary]}
-                onPress={() => {
-                  setShowRegisterModal(false);
-                  // Навигация на страницу регистрации
-                }}
-              >
-                <Text style={styles.modalButtonText}>Зарегистрироваться</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.modalButtonSecondary]}
-                onPress={() => setShowRegisterModal(false)}
-              >
-                <Text style={styles.modalButtonText}>Отмена</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+        {/* Шапка */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Сообщество</Text>
+          <TouchableOpacity onPress={() => router.push('/community/filters')}>
+            <Filter size={24} color="#64748B" />
+          </TouchableOpacity>
         </View>
-      </Modal>
-    </ScrollView>
+
+        {/* Фильтры */}
+        <View style={styles.filtersWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filtersContainer}
+          >
+            {['Новые', 'Популярные', 'Мои посты'].map((filter) => (
+              <TouchableOpacity
+                key={filter}
+                style={[
+                  styles.filterPill,
+                  activeFilter === filter.toLowerCase() && styles.activeFilter
+                ]}
+                onPress={() => setActiveFilter(filter.toLowerCase())}
+              >
+                <Text 
+                  style={[
+                    styles.filterText,
+                    activeFilter === filter.toLowerCase() && styles.activeFilterText
+                  ]}
+                  numberOfLines={1} // Предотвращаем перенос текста
+                >
+                  {filter}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Лента постов */}
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
+          renderItem={({ item }) => (
+            <View style={styles.postCard}>
+              {/* Заголовок поста */}
+              <View style={styles.postHeader}>
+                <Image source={ item.user.avatar } style={styles.avatar} />
+                <View style={styles.userInfo}>
+                  <Text style={styles.userName}>{item.user.name}</Text>
+                  <Text style={styles.userDays}>{item.user.daysSober} дней трезвости</Text>
+                </View>
+                <Text style={styles.postTime}>{item.time}</Text>
+              </View>
+
+              {/* Текст поста */}
+              <Text style={styles.postContent}>{item.content}</Text>
+
+              {/* Теги */}
+              <View style={styles.tagsContainer}>
+                {item.tags.map((tag) => (
+                  <Text key={tag} style={styles.tag}>#{tag}</Text>
+                ))}
+              </View>
+
+              {/* Действия */}
+              <View style={styles.postActions}>
+                <TouchableOpacity style={styles.actionButton}>
+                  <Heart size={18} color="#64748B" />
+                  <Text style={styles.actionText}>{item.likes}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.actionButton}>
+                  <MessageCircle size={18} color="#64748B" />
+                  <Text style={styles.actionText}>{item.comments}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.actionButton}>
+                  <Share size={18} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        />
+
+        {/* Кнопка создания поста */}
+        <TouchableOpacity 
+          style={styles.createPostButton}
+          onPress={() => router.push('/community/new-post')}
+        >
+          <Plus size={24} color="white" />
+        </TouchableOpacity>
+      </LinearGradient>
+    </View>
   );
 }
 
+// Стили
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
   },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
+  background: {
+    flex: 1,
+    paddingTop: 50,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
     marginBottom: 20,
   },
   title: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 28,
-    color: '#fff',
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '600',
   },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 4,
+  filtersWrapper: {
+    paddingHorizontal: 8, // Добавляем отступы по бокам
+    marginBottom: 12,
   },
-  filterText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#fff',
+  filtersContainer: {
+    paddingHorizontal: 12, // Отступ внутри скролла
+    gap: 8, // Фиксированный отступ между кнопками
   },
-  categories: {
-    marginBottom: 20,
-  },
-  categoryButton: {
+  filterPill: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    marginRight: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  categoryActive: {
-    backgroundColor: '#2A5CFF',
-  },
-  categoryText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#fff',
-  },
-  categoryTextActive: {
-    color: '#fff',
-  },
-  quizCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-  },
-  quizTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 20,
-    color: '#fff',
-    marginBottom: 8,
-  },
-  quizQuestion: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: 16,
-  },
-  quizButton: {
-    backgroundColor: '#2A5CFF',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#1E293B',
+    borderWidth: 1,
+    borderColor: '#334155',
+    minWidth: 100, // Минимальная ширина для всех кнопок
     alignItems: 'center',
+    justifyContent: 'center',
+  },  
+  activeFilter: {
+    backgroundColor: '#2A5CFF',
+    borderColor: '#2A5CFF',
   },
-  quizButtonText: {
-    fontFamily: 'Inter_600SemiBold',
+  filterText: {
+    color: '#94A3B8',
     fontSize: 14,
-    color: '#fff',
+    fontWeight: '500',
+    includeFontPadding: false, // Убираем лишние отступы у текста
   },
-  storyCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 16,
-    padding: 20,
+  activeFilterText: {
+    color: 'white',
+    fontWeight: '500',
+  },
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 80,
+  },
+  postCard: {
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#334155',
   },
-  storyHeader: {
+  postHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 12,
   },
-  storyTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 18,
-    color: '#fff',
-    marginBottom: 4,
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
   },
-  storyAuthor: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
+  userInfo: {
+    flex: 1,
   },
-  storyPreview: {
-    fontFamily: 'Inter_400Regular',
+  userName: {
+    color: '#FFFFFF',
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '600',
+  },
+  userDays: {
+    color: '#64748B',
+    fontSize: 12,
+  },
+  postTime: {
+    color: '#64748B',
+    fontSize: 12,
+  },
+  postContent: {
+    color: '#E2E8F0',
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 12,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
     marginBottom: 16,
   },
-  storyActions: {
+  tag: {
+    color: '#2A5CFF',
+    fontSize: 13,
+  },
+  postActions: {
     flexDirection: 'row',
     gap: 16,
   },
@@ -259,54 +261,22 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   actionText: {
-    fontFamily: 'Inter_400Regular',
+    color: '#64748B',
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  createPostButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#2A5CFF',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#1E293B',
-    borderRadius: 16,
-    padding: 24,
-    width: '90%',
-    maxWidth: 400,
-  },
-  modalTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 20,
-    color: '#fff',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  modalText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  modalButtons: {
-    gap: 12,
-  },
-  modalButton: {
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  modalButtonPrimary: {
-    backgroundColor: '#2A5CFF',
-  },
-  modalButtonSecondary: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  modalButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
 });

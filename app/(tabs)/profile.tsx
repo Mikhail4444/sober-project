@@ -1,108 +1,122 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Импортируем иконки
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Settings, ChevronRight, Heart, Calendar, Award, Users, FileText } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
-const TikTokProfile = () => {
+const ProfileScreen = () => {
   const router = useRouter();
-  // Данные пользователя
+  const [activeTab, setActiveTab] = useState('stats');
+  
+  // Моковые данные
   const user = {
-    username: '@sober_champion',
     name: 'Алексей',
-    bio: '127 дней трезвости | Бросаю вредные привычки',
-    followers: '1.2K',
-    following: '84',
-    likes: '5.7K',
     avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    stats: {
-      streak: 27,
-      savedMoney: 8500,
-      challenges: 15
-    }
+    daysSober: 87,
+    addiction: 'Алкоголь',
+    level: 'Новичок',
+    progress: 65,
   };
 
-  // Пример постов
-  const posts = [
-    { id: 1, type: 'video', title: 'Мой 100-дневный рубеж' },
-    { id: 2, type: 'tip', title: 'Как преодолеть тягу' },
-    { id: 3, type: 'milestone', title: 'Сэкономил 5000₽' }
+  const stats = [
+    { label: 'Трезвых дней', value: user.daysSober },
+    { label: 'Сэкономлено', value: '24 500 ₽' },
+    { label: 'Здоровье', value: '+42%' },
+  ];
+
+  const achievements = [
+    { id: '1', title: 'Первая неделя', icon: '🏆', unlocked: true },
+    { id: '2', title: 'Месяц трезвости', icon: '🎖️', unlocked: true },
+    { id: '3', title: '90 дней', icon: '🏅', unlocked: false },
+  ];
+
+  const menuItems = [
+    { id: '1', icon: <Heart size={20} color="#64748B" />, title: 'Понравившиеся посты', screen: 'liked' },
+    { id: '2', icon: <Calendar size={20} color="#64748B" />, title: 'Мои записи', screen: 'appointments' },
+    { id: '3', icon: <Users size={20} color="#64748B" />, title: 'Подписки', screen: 'following' },
+    { id: '4', icon: <FileText size={20} color="#64748B" />, title: 'Мои истории', screen: 'stories' },
   ];
 
   return (
     <View style={styles.container}>
-      {/* Шапка профиля с кнопками в правом углу */}
-      <View style={styles.topBar}>
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="share-outline" size={24} color="white" />
+      <LinearGradient
+        colors={['#0F172A', '#1E293B']}
+        style={styles.background}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {/* Шапка */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Профиль</Text>
+          <TouchableOpacity onPress={() => router.push('/settings')}>
+            <Settings size={24} color="#64748B" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={24} color="white" />
-          </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.header}>
-        <Image source={{ uri: user.avatar }} style={styles.avatar} />
-        
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{user.stats.streak}</Text>
-            <Text style={styles.statLabel}>Дней</Text>
-          </View>
-          
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{user.followers}</Text>
-            <Text style={styles.statLabel}>Подписчиков</Text>
-          </View>
-          
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{user.following}</Text>
-            <Text style={styles.statLabel}>Подписок</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Остальной код остаётся без изменений */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.username}>{user.username}</Text>
-        <Text style={styles.bio}>{user.bio}</Text>
-        
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${(user.stats.streak/30)*100}%` }]} />
-          </View>
-          <Text style={styles.progressText}>{user.stats.streak}/30 дней до цели</Text>
-        </View>
-      </View>
-
-      {/* Навигация профиля */}
-      <View style={styles.tabsContainer}>
-        <TouchableOpacity style={[styles.tab, styles.activeTab]}>
-          <Text style={styles.activeTabText}>Мои посты</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tab}>
-          <Text style={styles.tabText}>Достижения</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tab}>
-          <Text style={styles.tabText}>Сохраненные</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Контент профиля */}
-      <ScrollView style={styles.content}>
-        {posts.map(post => (
-          <View key={post.id} style={styles.postCard}>
-            <View style={styles.postImage} />
-            <Text style={styles.postTitle}>{post.title}</Text>
-            <View style={styles.postStats}>
-              <Text style={styles.postStat}>▶️ 1.2K</Text>
-              <Text style={styles.postStat}>❤️ 245</Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Информация о пользователе */}
+          <View style={styles.profileSection}>
+            <Image source={{ uri: user.avatar }} style={styles.avatar} />
+            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={styles.userLevel}>{user.level}</Text>
+            
+            <View style={styles.progressBar}>
+              <LinearGradient
+                colors={['#2A5CFF', '#3B82F6']}
+                style={[styles.progressFill, { width: `${user.progress}%` }]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              />
             </View>
+            <Text style={styles.addictionText}>Без {user.addiction.toLowerCase()}</Text>
           </View>
-        ))}
-      </ScrollView>
+
+          {/* Статистика */}
+          <View style={styles.statsContainer}>
+            {stats.map((stat, index) => (
+              <View key={index} style={styles.statCard}>
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Достижения */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Достижения</Text>
+              <TouchableOpacity>
+                <Text style={styles.seeAll}>Все</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.achievementsContainer}>
+              {achievements.map((item) => (
+                <TouchableOpacity key={item.id} style={[styles.achievementCard, !item.unlocked && styles.lockedAchievement]}>
+                  <Text style={styles.achievementIcon}>{item.icon}</Text>
+                  <Text style={styles.achievementTitle}>{item.title}</Text>
+                  {!item.unlocked && <View style={styles.lockOverlay} />}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Меню */}
+          <View style={styles.menuSection}>
+            {menuItems.map((item) => (
+              <TouchableOpacity 
+                key={item.id} 
+                style={styles.menuItem}
+                onPress={() => router.push(`/profile/${item.screen}`)}
+              >
+                <View style={styles.menuIcon}>{item.icon}</View>
+                <Text style={styles.menuText}>{item.title}</Text>
+                <ChevronRight size={20} color="#64748B" />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </LinearGradient>
     </View>
   );
 };
@@ -110,156 +124,166 @@ const TikTokProfile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
   },
-  topBar: {
-    position: 'absolute',
-    top: 40,
-    right: 15,
-    zIndex: 10,
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(42, 92, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
+  background: {
+    flex: 1,
+    paddingTop: 50,
   },
   header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
-    paddingTop: 80, // Увеличили отступ сверху для кнопок
-    backgroundColor: '#1E293B',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  title: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  profileSection: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 3,
     borderColor: '#2A5CFF',
+    marginBottom: 12,
   },
-  statsRow: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginLeft: 20,
+  userName: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '600',
+    marginBottom: 4,
   },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  statLabel: {
-    color: '#94A3B8',
-    fontSize: 12,
-    marginTop: 5,
-  },
-  infoContainer: {
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    backgroundColor: '#1E293B',
-    padding: 15,
-    borderRadius: 10,
-    margin: 10,
-  },
-  name: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  username: {
-    color: '#94A3B8',
-    fontSize: 14,
-    marginTop: 2,
-  },
-  bio: {
-    color: 'white',
-    fontSize: 14,
-    marginTop: 10,
-    lineHeight: 20,
-  },
-  progressContainer: {
-    marginTop: 15,
+  userLevel: {
+    color: '#2A5CFF',
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 16,
   },
   progressBar: {
-    height: 4,
+    height: 6,
+    width: '80%',
     backgroundColor: '#334155',
-    borderRadius: 2,
+    borderRadius: 3,
+    marginBottom: 8,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#2A5CFF',
+    borderRadius: 3,
   },
-  progressText: {
-    color: '#94A3B8',
-    fontSize: 12,
-    marginTop: 5,
-    alignSelf: 'flex-end',
+  addictionText: {
+    color: '#64748B',
+    fontSize: 14,
   },
-  tabsContainer: {
+  statsContainer: {
     flexDirection: 'row',
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#334155',
-    backgroundColor: '#1E293B',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
-  tab: {
-    flex: 1,
+  statCard: {
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 16,
+    width: '30%',
     alignItems: 'center',
-    paddingVertical: 15,
+    borderWidth: 1,
+    borderColor: '#334155',
   },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#2A5CFF',
+  statValue: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
   },
-  tabText: {
-    color: '#94A3B8',
-    fontWeight: '500',
-  },
-  activeTabText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  content: {
-    flex: 1,
-    padding: 10,
-    backgroundColor: '#0F172A',
-  },
-  postCard: {
-    marginBottom: 15,
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-    padding: 12,
-  },
-  postImage: {
-    width: '100%',
-    aspectRatio: 9/16,
-    backgroundColor: '#334155',
-    borderRadius: 5,
-  },
-  postTitle: {
-    color: 'white',
-    marginTop: 8,
-    fontWeight: '500',
-  },
-  postStats: {
-    flexDirection: 'row',
-    marginTop: 5,
-  },
-  postStat: {
-    color: '#94A3B8',
+  statLabel: {
+    color: '#64748B',
     fontSize: 12,
-    marginRight: 15,
+    textAlign: 'center',
+  },
+  section: {
+    marginBottom: 24,
+    paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  seeAll: {
+    color: '#2A5CFF',
+    fontSize: 14,
+  },
+  achievementsContainer: {
+    gap: 12,
+    paddingRight: 20,
+  },
+  achievementCard: {
+    width: 100,
+    height: 120,
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  lockedAchievement: {
+    opacity: 0.6,
+  },
+  achievementIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  achievementTitle: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  lockOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    borderRadius: 12,
+  },
+  menuSection: {
+    backgroundColor: '#1E293B',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#334155',
+    marginBottom: 24,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderColor: '#334155',
+  },
+  menuIcon: {
+    marginRight: 12,
+  },
+  menuText: {
+    flex: 1,
+    color: '#E2E8F0',
+    fontSize: 16,
   },
 });
 
-export default TikTokProfile;
+export default ProfileScreen;
